@@ -42,9 +42,9 @@ void messageCallback(String &topic, String &payload) {
 }
 
 void setup() {
-  SerialUSB.begin(115200);
+  SerialUSB.begin(9600);
   while (!SerialUSB.available());
-  Serial1.begin(115200);
+  Serial1.begin(9600);
   while (!SerialUSB.available());
   set_up_network();
   mqtt_client.subscribe("teamE/test/receive");
