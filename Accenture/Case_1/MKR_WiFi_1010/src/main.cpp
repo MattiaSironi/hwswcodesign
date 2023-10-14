@@ -47,15 +47,14 @@ void setup() {
   Serial1.begin(115200);
   while (!SerialUSB.available());
   set_up_network();
-  mqtt_client.subscribe("/teamE/test/receive");
+  mqtt_client.subscribe("teamE/test/receive");
 }
 
 void loop() {
   mqtt_client.loop();
   if (!mqtt_client.connected()) set_up_network();
-
   if (millis() - lastMillis > 1000) {
     lastMillis = millis();
-    mqtt_client.publish("/teamE/test/mkr1000-heartbeat", "");
+    mqtt_client.publish("teamE/test/mkr1000-heartbeat", "");
   }
 }
