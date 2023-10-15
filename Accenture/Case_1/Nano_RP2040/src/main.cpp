@@ -1,7 +1,12 @@
 #include <Arduino_LSM6DSOX.h>
+void reset_temperature();
+void normal();
+void alert();
+void fault();
+void debug();
 unsigned long delay_ms, delay_sum_ms;
 int max_t, min_t, sum, n_temperature;
-enum state_enum {NORMAL, ALERT, FAULT};
+enum state_enum {NORMAL, ALERT, FAULT, DEBUG};
 state_enum state; 
 #define MAX_TMP 30
 #define TA_MS 60000
@@ -14,11 +19,13 @@ if (!IMU.begin()) {
   }
   delay_ms = 10000;
   reset_temperature();
-  state = NORMAL;
+  state = DEBUG;
+  if (state == DEBUG) pinMode(LED_BUILTIN, OUTPUT);
 }
 
 void loop() {
   switch (state) {
+    case DEBUG : debug(); break;
     case NORMAL: normal(); break;
     case ALERT: alert(); break;
     default: fault(); break;
@@ -79,4 +86,10 @@ void alert() {
 void fault() {
   Serial.println("FAULT");
   delay(500);
+}
+void debug() {
+  digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
+  delay(1000);                       // wait for a second
+  digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
+  delay(1000);                       // wait for a second
 }
