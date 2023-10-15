@@ -2,6 +2,11 @@
 #include <WiFi.h>
 #include <MQTT.h>
 
+#include "message.h"
+
+uint8_t received_message_buffer[sizeof(message_t)];
+message_t *received_message;
+
 static const char *ssid = WIFI_SSID;
 static const char *wifi_password = WIFI_PASSWORD;
 static const char *host = MQTT_HOST;
@@ -45,7 +50,7 @@ void setup() {
   SerialUSB.begin(9600);
   while (!SerialUSB.available());
   Serial1.begin(9600);
-  while (!SerialUSB.available());
+  while (!Serial1.available());
   set_up_network();
   mqtt_client.subscribe("teamE/test/receive");
 }
@@ -57,4 +62,8 @@ void loop() {
     lastMillis = millis();
     mqtt_client.publish("teamE/test/mkr1000-heartbeat", "");
   }
+
+  Serial1.readBytes(received_message_buffer, sizeof(message_t));
+  received_message = (message_t *)received_message_buffer;
+  SerialUSB.println("Received MAX temp is "+received_message->max_temp);
 }

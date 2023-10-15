@@ -1,4 +1,9 @@
 #include <Arduino_LSM6DSOX.h>
+
+#include "message.h"
+
+message_t message_to_send;
+
 void reset_temperature();
 void normal();
 void alert();
@@ -6,11 +11,15 @@ void fault();
 void debug();
 unsigned long delay_ms, delay_sum_ms;
 int max_t, min_t, sum, n_temperature;
+
 enum state_enum {NORMAL, ALERT, FAULT, DEBUG};
 state_enum state; 
+
 #define MAX_TMP 30
 #define TA_MS 60000
+
 void setup() {
+  Serial1.begin(9600);
   // put your setup code here, to run once:
 if (!IMU.begin()) {
     Serial.println("Failed to initialize IMU!");
@@ -19,7 +28,7 @@ if (!IMU.begin()) {
   }
   delay_ms = 10000;
   reset_temperature();
-  state = DEBUG;
+  state = NORMAL;
   if (state == DEBUG) pinMode(LED_BUILTIN, OUTPUT);
 }
 
@@ -51,15 +60,28 @@ void normal() {
     delay_sum_ms+=delay_ms;
     if (  delay_sum_ms >= TA_MS) {
       float avg = (float)sum / (float)n_temperature;
+
+      message_to_send = {
+        1,
+        (uint8_t)NORMAL,
+        true, 
+        max_t,
+        min_t,
+        avg,
+      };
+
       Serial.print("Recap last minute: MAX = ");
-      Serial.print(max_t);
+      Serial.print(message_to_send.max_temp);
       Serial.print(" °C");
       Serial.print(", MIN = ");
-      Serial.print(min_t);
+      Serial.print(message_to_send.min_temp);
       Serial.print(" °C");
       Serial.print(", AVG = ");
-      Serial.print(avg);
+      Serial.print(message_to_send.avg_temp);
       Serial.println(" °C");
+
+      Serial.write((uint8_t *)&message_to_send, sizeof(message_t));
+
       reset_temperature();
     }
   }
