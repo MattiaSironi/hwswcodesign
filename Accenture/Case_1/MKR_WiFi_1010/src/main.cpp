@@ -1,8 +1,12 @@
 #include <Arduino.h>
+
 #include <WiFi.h>
 #include <MQTT.h>
 
 #include "message.h"
+
+static uint8_t heartbeat_counter;
+static size_t number_bytes_read;
 
 uint8_t received_message_buffer[sizeof(message_t)];
 message_t *received_message;
@@ -23,6 +27,9 @@ void messageCallback(String &topic, String &payload);
 
 void set_up_network()
 {
+  // FIXME Remove when MQTT broker is back up
+  return;
+
   SerialUSB.println("Setting up network connection");
 
   WiFi.begin(ssid, wifi_password);
@@ -53,25 +60,40 @@ void messageCallback(String &topic, String &payload)
 void setup()
 {
   SerialUSB.begin(9600);
-  while (!SerialUSB.available())
+  while (!SerialUSB)
     ;
   Serial1.begin(9600);
+  while (!Serial1)
+    ;
   set_up_network();
   mqtt_client.subscribe("teamE/test/receive");
 }
 
 void loop()
 {
-  mqtt_client.loop();
+  // mqtt_client.loop();
   if (!mqtt_client.connected())
     set_up_network();
   if (millis() - lastMillis > 1000)
   {
+    heartbeat_counter += 1;
+    SerialUSB.println(heartbeat_counter);
     lastMillis = millis();
-    mqtt_client.publish("teamE/test/mkr1000-heartbeat", "");
+    // mqtt_client.publish("teamE/test/mkr1000-heartbeat", String(heartbeat_counter));
   }
 
-  Serial1.readBytes(received_message_buffer, sizeof(message_t));
-  received_message = (message_t *)received_message_buffer;
-  SerialUSB.println("Received MAX temp is " + received_message->max_temp);
+  if (Serial1.available())
+  {
+    number_bytes_read = Serial1.readBytes(received_message_buffer, sizeof(message_t));
+    if (number_bytes_read > 0)
+    {
+      received_message = (message_t *)received_message_buffer;
+      SerialUSB.print("Received MAX temp is ");
+      SerialUSB.println(received_message->max_temp);
+    }
+    else
+    {
+      SerialUSB.println("No data to read");
+    }
+  }
 }
