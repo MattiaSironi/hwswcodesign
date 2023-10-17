@@ -2,22 +2,18 @@
 #include <WiFi.h>
 #include <MQTT.h>
 
-#include "message.h"
-enum state_enum {NORMAL, ALERT, FAULT, DEBUG};
-state_enum state; 
-uint8_t received_message_buffer[sizeof(message_t)];
-message_t *received_message;
+#define SERVER_ON 0
 
+enum state_enum {NORMAL, ALERT, FAULT, DEBUG};
+state_enum state[1]; 
+WiFiClient wifi_client;
+MQTTClient mqtt_client;
 static const char *ssid = WIFI_SSID;
 static const char *wifi_password = WIFI_PASSWORD;
 static const char *host = MQTT_HOST;
 static const int port = MQTT_PORT;
 static const char *username = MQTT_USERNAME;
 static const char *mqtt_password = MQTT_PASSWORD;
-
-WiFiClient wifi_client;
-MQTTClient mqtt_client;
-
 unsigned long lastMillis = 0;
 
 void messageCallback(String &topic, String &payload);
@@ -48,33 +44,29 @@ void messageCallback(String &topic, String &payload) {
 }
 
 void setup() {
- /*  SerialUSB.begin(9600);
-  while (!SerialUSB.available()); */
   Serial1.begin(9600);
   while (!Serial.available());
-  set_up_network();
-  mqtt_client.subscribe("teamE/test/receive");
+  if(SERVER_ON) {
+    set_up_network();
+    mqtt_client.subscribe("teamE/test/receive");
+  }
 }
 
 void loop() {
-/*   mqtt_client.loop();
-  if (!mqtt_client.connected()) set_up_network();
-  if (millis() - lastMillis > 1000) {
-    lastMillis = millis();
-    mqtt_client.publish("teamE/test/mkr1000-heartbeat", "");
-  } */
-
   while(!Serial1.available());
   String msg = Serial1.readString();
-
-  int id, max_t, min_t;
-  float avg_t;
+  int id, max_t, min_t, avg_t;
+  state_enum state_tmp;
   char msg_str[15];
   msg.toCharArray(msg_str, 15);
-  sscanf(msg_str, "%d,%d,%d,%d,%.2f", &id, &state, &max_t, &min_t, &avg_t);
-  
-
-  /* Serial1.readBytes(received_message_buffer, sizeof(message_t));
-  received_message = (message_t *)received_message_buffer;
-  SerialUSB.println("Received MAX temp is "+received_message->max_temp); */
+  sscanf(msg_str, "%d,%d,%d,%d,%d", &id, &state_tmp, &max_t, &min_t, &avg_t);
+  state[id] = state_tmp;
+  if (SERVER_ON) {
+    mqtt_client.loop();
+    if (!mqtt_client.connected()) set_up_network();
+    if (millis() - lastMillis > 1000) {
+      lastMillis = millis();
+      mqtt_client.publish("teamE/test/mkr1000-heartbeat", msg_str);
+    } 
+  }
 }
