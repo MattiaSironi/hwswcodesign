@@ -3,7 +3,8 @@
 #include <MQTT.h>
 
 #include "message.h"
-
+enum state_enum {NORMAL, ALERT, FAULT, DEBUG};
+state_enum state; 
 uint8_t received_message_buffer[sizeof(message_t)];
 message_t *received_message;
 
@@ -47,23 +48,33 @@ void messageCallback(String &topic, String &payload) {
 }
 
 void setup() {
-  SerialUSB.begin(9600);
-  while (!SerialUSB.available());
+ /*  SerialUSB.begin(9600);
+  while (!SerialUSB.available()); */
   Serial1.begin(9600);
-  while (!Serial1.available());
+  while (!Serial.available());
   set_up_network();
   mqtt_client.subscribe("teamE/test/receive");
 }
 
 void loop() {
-  mqtt_client.loop();
+/*   mqtt_client.loop();
   if (!mqtt_client.connected()) set_up_network();
   if (millis() - lastMillis > 1000) {
     lastMillis = millis();
     mqtt_client.publish("teamE/test/mkr1000-heartbeat", "");
-  }
+  } */
 
-  Serial1.readBytes(received_message_buffer, sizeof(message_t));
+  while(!Serial1.available());
+  String msg = Serial1.readString();
+
+  int id, max_t, min_t;
+  float avg_t;
+  char msg_str[15];
+  msg.toCharArray(msg_str, 15);
+  sscanf(msg_str, "%d,%d,%d,%d,%.2f", &id, &state, &max_t, &min_t, &avg_t);
+  
+
+  /* Serial1.readBytes(received_message_buffer, sizeof(message_t));
   received_message = (message_t *)received_message_buffer;
-  SerialUSB.println("Received MAX temp is "+received_message->max_temp);
+  SerialUSB.println("Received MAX temp is "+received_message->max_temp); */
 }

@@ -59,7 +59,7 @@ void normal() {
     if (temperature_deg < min_t) min_t = temperature_deg;
     delay_sum_ms+=delay_ms;
     if (  delay_sum_ms >= TA_MS) {
-      float avg = (float)sum / (float)n_temperature;
+      float avg_t = (float)sum / (float)n_temperature;
 
       message_to_send = {
         1,
@@ -67,7 +67,7 @@ void normal() {
         true, 
         max_t,
         min_t,
-        avg,
+        avg_t,
       };
 
       Serial.print("Recap last minute: MAX = ");
@@ -79,8 +79,12 @@ void normal() {
       Serial.print(", AVG = ");
       Serial.print(message_to_send.avg_temp);
       Serial.println(" °C");
+// "id,status,max,min,avg" id = index 0, status index 2, max index 4-5, min index 7-8, avg index 10-11-12-13-14;
+      char buffer[15];
+      sprintf(buffer, "%d,%d,%d,%d,%.2f", 0, state, max_t, min_t, avg_t);
+      Serial1.write(buffer);
 
-      Serial.write((uint8_t *)&message_to_send, sizeof(message_t));
+      //Serial.write((uint8_t *)&message_to_send, sizeof(message_t));
 
       reset_temperature();
     }
