@@ -1,41 +1,38 @@
 #include <Arduino_LSM6DSOX.h>
-
 #include "message.h"
 
-message_t message_to_send;
+#define LINE_ID 0
+#define MAX_TMP 30
+#define TA_MS 60000
 
 void reset_temperature();
 void normal();
 void alert();
 void fault();
-void debug();
-unsigned long delay_ms, delay_sum_ms;
-int max_t, min_t, sum, n_temperature;
 
-enum state_enum {NORMAL, ALERT, FAULT, DEBUG};
-state_enum state; 
-#define LINE_ID 0
-#define MAX_TMP 30
-#define TA_MS 60000
-#define DEBUG(x) Serial.print(x)
-#define DEBUGln(x) Serial.println(x)
+unsigned long delay_ms, delay_sum_ms;
+int max_t, min_t, avg_t, sum, n_temperature;
+enum state_enum {NORMAL, ALERT, FAULT, Serial.print};
+state_enum state;
+
+
 void setup() {
   Serial1.begin(9600);
   // put your setup code here, to run once:
 if (!IMU.begin()) {
-    DEBUGln("Failed to initialize IMU!");
+    Serial.println("Failed to initialize IMU!");
     while (1);
   
   }
   delay_ms = 10000;
   reset_temperature();
   state = NORMAL;
-  if (state == DEBUG) pinMode(LED_BUILTIN, OUTPUT);
+  if (state == Serial.print) pinMode(LED_BUILTIN, OUTPUT);
 }
 
 void loop() {
   switch (state) {
-    case DEBUG : debug(); break;
+    case Serial.print : Serial.print(); break;
     case NORMAL: normal(); break;
     case ALERT: alert(); break;
     default: fault(); break;
@@ -67,9 +64,9 @@ void retrieve_temperature() {
     int temperature_deg = 0;
     IMU.readTemperature(temperature_deg);
 
-    DEBUG("LSM6DSOX Temperature = ");
-    DEBUG(temperature_deg);
-    DEBUGln(" °C");
+    Serial.print("LSM6DSOX Temperature = ");
+    Serial.print(temperature_deg);
+    Serial.println(" °C");
     if (temperature_deg > MAX_TMP) state = ALERT;
     n_temperature++;
     sum+=temperature_deg;
@@ -78,18 +75,18 @@ void retrieve_temperature() {
     delay_sum_ms+=delay_ms;
     if ( delay_sum_ms >= TA_MS) {
       int avg_t = sum / n_temperature;
-
-      DEBUG("Recap last minute: MAX = ");
-      DEBUG(max_t);
-      DEBUG(" °C");
-      DEBUG(", MIN = ");
-      DEBUG(min_t);
-      DEBUG(" °C");
-      DEBUG(", AVG = ");
-      DEBUG(avg_t);
-      DEBUGln(" °C");
-
+      Serial.print("Recap last minute: MAX = ");
+      Serial.print(max_t);
+      Serial.print(" °C");
+      Serial.print(", MIN = ");
+      Serial.print(min_t);
+      Serial.print(" °C");
+      Serial.print(", AVG = ");
+      Serial.print(avg_t);
+      Serial.println(" °C");
+    }
 } 
+}
 
 void reset_temperature() {
   max_t = 0;
@@ -101,15 +98,15 @@ void reset_temperature() {
 
 void alert() {
   delay_ms(1000);
-  DEBUGln("ALERT");
+  Serial.println("ALERT");
   delay(500);
 }
 
 void fault() {
-  DEBUGln("FAULT");
+  Serial.println("FAULT");
   delay(500);
 }
-void debug() {
+void Serial.print() {
   digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
   delay(1000);                       // wait for a second
   digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
