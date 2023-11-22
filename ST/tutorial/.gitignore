@@ -2,4 +2,4 @@
 !.gitignore
 !ispu/**
 ispu/**/bin
-ispu/**/output
+*.ucf

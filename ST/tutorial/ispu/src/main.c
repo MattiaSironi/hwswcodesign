@@ -64,12 +64,12 @@ void __attribute__((signal)) algo_00(void) {
   if (win_count == WIN_LEN_IN_SAMPLES) {
     size_t out_addr = ISPU_DOUT_00;
     uint8_t activity_class = activity_classifier_predict(mean);
-    cast_uint8_t(ISPU_DOUT_01) = activity_class;
     // output the mean
     for (uint8_t ax = 0; ax < SENSOR_NUM_AXES; ax++) {
       cast_float(out_addr) = mean[ax];
       out_addr += 4;
     }
+    cast_uint8_t(out_addr) = activity_class;
 
     reset_status();
   }

@@ -1,0 +1,33 @@
+{
+  "output":
+  [
+    {
+      "name": "Mean Acc x [g]",
+      "type": "float"
+    },
+    {
+      "name": "Mean Acc y [g]",
+      "type": "float"
+    },
+    {
+      "name": "Mean Acc z [g]",
+      "type": "float"
+    },
+    {
+      "name": "Mean Gyro x [g]",
+      "type": "float"
+    },
+    {
+      "name": "Mean Gyro y [g]",
+      "type": "float"
+    },
+    {
+      "name": "Mean Gyro z [g]",
+      "type": "float"
+    },
+    {
+      "name": "Class",
+      "type": "uint8_t"
+    }
+  ]
+}
