@@ -1,0 +1,16 @@
+CompileFlags:
+  Add:
+    - -mcpu=reiscl
+    - -Os
+    - -specs=nano.specs
+    - -ffunction-sections
+    - -fdata-sections
+    - -Wl,--gc-sections -mfp32-format=ieee
+    - -Wall
+    - -Wextra
+    - -Wdouble-promotion
+    - -fno-strict-aliasing
+    - -I/home/tomaz/git/Politecnico/Projects/hwswcodesign/ST/tutorial/ispu/ispu_utils
+    - -I/home/tomaz/git/Politecnico/Projects/hwswcodesign/ST/tutorial/ispu/include
+  Compiler: /home/tomaz/git/Politecnico/Projects/hwswcodesign/ST/tutorial/ispu-toolchain-1.3.0-x86_64-linux
+
